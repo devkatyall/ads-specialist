@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -30,6 +30,8 @@ import {
   Hash,
   Ban,
   Plus,
+  RefreshCcw,
+  Loader2,
   ChevronDown,
   ChevronRight,
 } from "lucide-react";
@@ -61,6 +63,12 @@ export default function CampaignResults({
 }) {
   const [expandedAdGroups, setExpandedAdGroups] = useState(new Set([0]));
   const [copiedItems, setCopiedItems] = useState(new Set());
+  const [refreshingIndex, setRefreshingIndex] = useState(null);
+  const [assetData, setAssetData] = useState(generatedAssets);
+
+  useEffect(() => {
+    setAssetData(generatedAssets);
+  }, [generatedAssets]);
 
   const copyToClipboard = async (text, itemId) => {
     try {
@@ -109,11 +117,11 @@ export default function CampaignResults({
 
   // Export functions
   const exportAllKeywords = () => {
-    if (!generatedAssets.adGroups) return;
+    if (!assetData.adGroups) return;
 
     const csvContent = [
       ["Ad Group", "Keyword", "Match Type"].join(","),
-      ...generatedAssets.adGroups.flatMap(
+      ...assetData.adGroups.flatMap(
         (adGroup) =>
           adGroup.keywords?.map((keyword) => [
             adGroup.theme,
@@ -142,11 +150,11 @@ export default function CampaignResults({
   };
 
   const exportNegativeKeywords = () => {
-    if (!generatedAssets.negativeKeywords) return;
+    if (!assetData.negativeKeywords) return;
 
     const csvContent = [
       ["Negative Keyword"].join(","),
-      ...generatedAssets.negativeKeywords.map((keyword) => [keyword]),
+      ...assetData.negativeKeywords.map((keyword) => [keyword]),
     ].join("\n");
 
     downloadCSV(csvContent, "negative-keywords.csv");
@@ -218,6 +226,33 @@ export default function CampaignResults({
     a.click();
     window.URL.revokeObjectURL(url);
     toast.success(`${filename} downloaded successfully!`);
+  };
+
+  const refreshAdGroupKeywords = async (index) => {
+    try {
+      setRefreshingIndex(index);
+      const group = assetData.adGroups[index];
+      const seeds = Array.isArray(group.keywords) && group.keywords.length > 0
+        ? group.keywords.slice(0, 5)
+        : [group.theme];
+      const res = await fetch("/api/keywords/expand", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ seeds }),
+      });
+      if (!res.ok) throw new Error("Request failed");
+      const data = await res.json();
+      setAssetData((prev) => {
+        const groups = [...prev.adGroups];
+        groups[index] = { ...groups[index], keywords: data.keywords };
+        return { ...prev, adGroups: groups };
+      });
+      toast.success("Keywords refreshed!");
+    } catch (err) {
+      toast.error("Failed to refresh keywords");
+    } finally {
+      setRefreshingIndex(null);
+    }
   };
 
   const renderAdPreview = (adGroup, adIndex) => {
@@ -374,7 +409,7 @@ export default function CampaignResults({
   };
 
   const renderSearchResults = () => {
-    if (!generatedAssets.adGroups) return null;
+    if (!assetData.adGroups) return null;
 
     return (
       <Tabs defaultValue="overview" className="w-full">
@@ -396,7 +431,7 @@ export default function CampaignResults({
                   <div>
                     <p className="text-sm text-gray-600">Ad Groups</p>
                     <p className="text-2xl font-bold">
-                      {generatedAssets.adGroups.length}
+                      {assetData.adGroups.length}
                     </p>
                   </div>
                 </div>
@@ -412,7 +447,7 @@ export default function CampaignResults({
                   <div>
                     <p className="text-sm text-gray-600">Total Keywords</p>
                     <p className="text-2xl font-bold">
-                      {generatedAssets.adGroups.reduce(
+                      {assetData.adGroups.reduce(
                         (total, group) => total + (group.keywords?.length || 0),
                         0
                       )}
@@ -431,7 +466,7 @@ export default function CampaignResults({
                   <div>
                     <p className="text-sm text-gray-600">Negative Keywords</p>
                     <p className="text-2xl font-bold">
-                      {generatedAssets.negativeKeywords?.length || 0}
+                      {assetData.negativeKeywords?.length || 0}
                     </p>
                   </div>
                 </div>
@@ -440,7 +475,7 @@ export default function CampaignResults({
           </div>
 
           <div className="space-y-4">
-            {generatedAssets.adGroups.map((adGroup, index) => (
+            {assetData.adGroups.map((adGroup, index) => (
               <Card key={index} className="border-l-4 border-l-blue-500">
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between">
@@ -474,7 +509,7 @@ export default function CampaignResults({
                 <div>
                   <CardTitle className="text-lg">All Keywords</CardTitle>
                   <CardDescription>
-                    {generatedAssets.adGroups.reduce(
+                    {assetData.adGroups.reduce(
                       (total, group) => total + (group.keywords?.length || 0),
                       0
                     )}{" "}
@@ -489,7 +524,7 @@ export default function CampaignResults({
             </CardHeader>
             <CardContent>
               <div className="space-y-6">
-                {generatedAssets.adGroups.map((adGroup, groupIndex) => (
+                {assetData.adGroups.map((adGroup, groupIndex) => (
                   <div key={groupIndex}>
                     <div className="flex items-center justify-between mb-3">
                       <h4 className="font-semibold text-gray-900">
@@ -533,7 +568,7 @@ export default function CampaignResults({
                         </Badge>
                       ))}
                     </div>
-                    {groupIndex < generatedAssets.adGroups.length - 1 && (
+                    {groupIndex < assetData.adGroups.length - 1 && (
                       <Separator />
                     )}
                   </div>
@@ -550,7 +585,7 @@ export default function CampaignResults({
                 <div>
                   <CardTitle className="text-lg">Negative Keywords</CardTitle>
                   <CardDescription>
-                    {generatedAssets.negativeKeywords?.length || 0} keywords to
+                    {assetData.negativeKeywords?.length || 0} keywords to
                     exclude from your campaigns
                   </CardDescription>
                 </div>
@@ -562,7 +597,7 @@ export default function CampaignResults({
             </CardHeader>
             <CardContent>
               <div className="flex flex-wrap gap-2">
-                {generatedAssets.negativeKeywords?.map((keyword, index) => (
+                {assetData.negativeKeywords?.map((keyword, index) => (
                   <Badge
                     key={index}
                     variant="outline"
@@ -579,7 +614,7 @@ export default function CampaignResults({
 
         <TabsContent value="adgroups" className="mt-6">
           <div className="space-y-6">
-            {generatedAssets.adGroups.map((adGroup, index) => (
+            {assetData.adGroups.map((adGroup, index) => (
               <Card key={index} className="border-l-4 border-l-blue-500">
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between">
@@ -656,16 +691,29 @@ export default function CampaignResults({
                                 {adGroup.keywords?.length || 0} keywords
                               </span>
                             </div>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() =>
-                                exportAdGroupKeywords(adGroup, index)
-                              }
-                            >
-                              <Download className="h-3 w-3 mr-1" />
-                              Export
-                            </Button>
+                            <div className="flex gap-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => exportAdGroupKeywords(adGroup, index)}
+                              >
+                                <Download className="h-3 w-3 mr-1" />
+                                Export
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => refreshAdGroupKeywords(index)}
+                                disabled={refreshingIndex === index}
+                              >
+                                {refreshingIndex === index ? (
+                                  <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                                ) : (
+                                  <RefreshCcw className="h-3 w-3 mr-1" />
+                                )}
+                                Refresh
+                              </Button>
+                            </div>
                           </div>
                           <div className="flex flex-wrap gap-2">
                             {adGroup.keywords?.map((keyword, kIndex) => (
@@ -821,7 +869,7 @@ export default function CampaignResults({
   };
 
   const renderGenericResults = () => {
-    const assetEntries = Object.entries(generatedAssets).filter(
+    const assetEntries = Object.entries(assetData).filter(
       ([key]) => key !== "adGroups"
     );
 
