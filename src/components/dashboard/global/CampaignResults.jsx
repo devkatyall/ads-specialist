@@ -852,6 +852,7 @@ export default function CampaignResults({
           };
 
           const renderAssetContent = (key, values) => {
+            // Handle Audience Signals (Performance Max)
             if (key === "audienceSignals" && Array.isArray(values)) {
               return (
                 <div className="space-y-3">
@@ -894,6 +895,7 @@ export default function CampaignResults({
               );
             }
 
+            // Handle Asset Recommendations (Performance Max)
             if (key === "assetRecommendations" && Array.isArray(values)) {
               return (
                 <div className="space-y-3">
@@ -936,6 +938,177 @@ export default function CampaignResults({
               );
             }
 
+            // Handle Target Audiences (App campaigns)
+            if (key === "targetAudiences" && Array.isArray(values)) {
+              return (
+                <div className="space-y-3">
+                  {values.map((audience, index) => (
+                    <div key={index} className="p-4 bg-gray-50 rounded-lg">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <h4 className="font-medium text-gray-900 mb-1">
+                            {audience.name}
+                          </h4>
+                          <p className="text-sm text-gray-600">
+                            {audience.reason}
+                          </p>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-6 w-6 p-0 ml-2"
+                          onClick={() =>
+                            copyToClipboard(
+                              `${audience.name}: ${audience.reason}`,
+                              `target-audience-${index}`
+                            )
+                          }
+                        >
+                          <Copy className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              );
+            }
+
+            // Handle Ad Copy (App campaigns)
+            if (key === "adCopy" && Array.isArray(values)) {
+              return (
+                <div className="space-y-3">
+                  {values.map((ad, index) => (
+                    <div key={index} className="p-4 bg-gray-50 rounded-lg">
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex-1">
+                          <h4 className="font-medium text-gray-900 mb-2">
+                            {ad.headline}
+                          </h4>
+                          <p className="text-sm text-gray-600 mb-2">
+                            {ad.description}
+                          </p>
+                          <Badge
+                            variant="outline"
+                            className="text-xs bg-blue-50 text-blue-700 border-blue-200"
+                          >
+                            {ad.cta}
+                          </Badge>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-6 w-6 p-0 ml-2"
+                          onClick={() =>
+                            copyToClipboard(
+                              `${ad.headline}\n${ad.description}\nCTA: ${ad.cta}`,
+                              `ad-copy-${index}`
+                            )
+                          }
+                        >
+                          <Copy className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              );
+            }
+
+            // Handle App Store Optimization (App campaigns)
+            if (
+              key === "appStoreOptimization" &&
+              values &&
+              typeof values === "object" &&
+              !Array.isArray(values)
+            ) {
+              return (
+                <div className="p-4 bg-gray-50 rounded-lg">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1 space-y-2">
+                      <div>
+                        <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+                          App Title
+                        </label>
+                        <p className="text-sm font-medium text-gray-900">
+                          {values.title}
+                        </p>
+                      </div>
+                      <div>
+                        <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+                          Subtitle
+                        </label>
+                        <p className="text-sm text-gray-700">
+                          {values.subtitle}
+                        </p>
+                      </div>
+                      <div>
+                        <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+                          Keywords
+                        </label>
+                        <p className="text-sm text-gray-700">
+                          {values.keywords}
+                        </p>
+                      </div>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-6 w-6 p-0 ml-2"
+                      onClick={() =>
+                        copyToClipboard(
+                          `Title: ${values.title}\nSubtitle: ${values.subtitle}\nKeywords: ${values.keywords}`,
+                          `aso`
+                        )
+                      }
+                    >
+                      <Copy className="h-3 w-3" />
+                    </Button>
+                  </div>
+                </div>
+              );
+            }
+
+            // Handle Creative Concepts (App campaigns)
+            if (key === "creativeConcepts" && Array.isArray(values)) {
+              return (
+                <div className="space-y-3">
+                  {values.map((concept, index) => (
+                    <div key={index} className="p-4 bg-gray-50 rounded-lg">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-2">
+                            <Badge variant="outline" className="text-xs">
+                              {concept.format}
+                            </Badge>
+                          </div>
+                          <h4 className="font-medium text-gray-900 mb-1">
+                            {concept.concept}
+                          </h4>
+                          <p className="text-sm text-gray-600">
+                            {concept.reason}
+                          </p>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-6 w-6 p-0 ml-2"
+                          onClick={() =>
+                            copyToClipboard(
+                              `${concept.format}: ${concept.concept}\nReason: ${concept.reason}`,
+                              `creative-${index}`
+                            )
+                          }
+                        >
+                          <Copy className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              );
+            }
+
+            // Handle regular arrays (existing functionality)
             if (Array.isArray(values)) {
               return (
                 <div className="space-y-2">
@@ -968,6 +1141,7 @@ export default function CampaignResults({
               );
             }
 
+            // Handle single objects or strings (existing functionality)
             return (
               <div className="p-3 bg-gray-50 rounded-lg">
                 <span className="text-sm">
