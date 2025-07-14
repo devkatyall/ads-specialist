@@ -6,24 +6,22 @@ import { Button } from "@/components/ui/button";
 import {
   Copy,
   Download,
-  Smartphone,
+  ShoppingCart,
   Plus,
   Calendar,
   ArrowLeft,
-  Megaphone,
-  Building,
-  ImageIcon,
-  Video,
-  Search,
+  Package,
+  FileText,
+  AlertCircle,
 } from "lucide-react";
 import { toast } from "sonner";
 
-export default function AppCampaignResults({
+export default function ShoppingCampaignResults({
   campaignName,
   generatedAssets,
   onCreateAnother,
 }) {
-  const [activeTab, setActiveTab] = useState("headlines");
+  const [activeTab, setActiveTab] = useState("products");
   const [assetData, setAssetData] = useState(generatedAssets);
 
   const copyToClipboard = async (text, itemId) => {
@@ -81,16 +79,15 @@ export default function AppCampaignResults({
     );
   };
 
-  const renderAppStoreOptimization = () => {
-    if (!assetData.appStoreOptimization) return null;
-
+  const renderProductGroups = () => {
     return (
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-base font-medium">App Store Optimization</h2>
+            <h2 className="text-base font-medium">Product Groups</h2>
             <p className="text-xs text-gray-500">
-              Keywords and metadata for app store visibility
+              {assetData.productGroups?.length || 0} product groups for
+              organized bidding
             </p>
           </div>
           <div className="flex gap-1.5">
@@ -100,96 +97,7 @@ export default function AppCampaignResults({
               className="h-7 px-2 text-xs bg-transparent"
             >
               <Plus className="h-3 w-3 mr-1" />
-              Add Keywords
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-7 px-2 text-xs bg-transparent"
-            >
-              <Download className="h-3 w-3 mr-1" />
-              Export
-            </Button>
-          </div>
-        </div>
-
-        <Card className="border border-gray-200">
-          <CardContent className="p-4">
-            <div className="space-y-4">
-              {assetData.appStoreOptimization.keywords && (
-                <div>
-                  <h4 className="text-sm font-medium text-gray-900 mb-2">
-                    App Store Keywords
-                  </h4>
-                  <div className="p-3 bg-gray-50 rounded-md">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs text-gray-600">
-                        Keywords (comma-separated)
-                      </span>
-                      <span className="text-xs text-gray-400">
-                        {assetData.appStoreOptimization.keywords.length}/100
-                        chars
-                      </span>
-                    </div>
-                    <p className="text-xs font-mono">
-                      {assetData.appStoreOptimization.keywords}
-                    </p>
-                  </div>
-                </div>
-              )}
-
-              {assetData.appStoreOptimization.title && (
-                <div>
-                  <h4 className="text-sm font-medium text-gray-900 mb-2">
-                    App Title
-                  </h4>
-                  <div className="p-3 bg-gray-50 rounded-md">
-                    <p className="text-xs">
-                      {assetData.appStoreOptimization.title}
-                    </p>
-                  </div>
-                </div>
-              )}
-
-              {assetData.appStoreOptimization.subtitle && (
-                <div>
-                  <h4 className="text-sm font-medium text-gray-900 mb-2">
-                    App Subtitle
-                  </h4>
-                  <div className="p-3 bg-gray-50 rounded-md">
-                    <p className="text-xs">
-                      {assetData.appStoreOptimization.subtitle}
-                    </p>
-                  </div>
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  };
-
-  const renderVideoAssets = () => {
-    if (!assetData.videos || assetData.videos.length === 0) return null;
-
-    return (
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-base font-medium">Video Assets</h2>
-            <p className="text-xs text-gray-500">
-              {assetData.videos.length} video concepts for app promotion
-            </p>
-          </div>
-          <div className="flex gap-1.5">
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-7 px-2 text-xs bg-transparent"
-            >
-              <Plus className="h-3 w-3 mr-1" />
-              Add Video
+              Add Group
             </Button>
             <Button
               variant="outline"
@@ -203,17 +111,17 @@ export default function AppCampaignResults({
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {assetData.videos.map((video, index) => (
+          {assetData.productGroups?.map((group, index) => (
             <Card
               key={index}
-              className="border border-gray-200 hover:border-red-300 transition-colors"
+              className="border border-gray-200 hover:border-indigo-300 transition-colors"
             >
               <CardContent className="p-4">
                 <div className="flex items-start justify-between mb-2">
-                  <h4 className="text-sm font-medium text-red-600">
-                    {typeof video === "object"
-                      ? video.title || `Video ${index + 1}`
-                      : `Video ${index + 1}`}
+                  <h4 className="text-sm font-medium text-indigo-600">
+                    {typeof group === "object"
+                      ? group.name || `Product Group ${index + 1}`
+                      : group}
                   </h4>
                   <Button
                     variant="ghost"
@@ -221,45 +129,95 @@ export default function AppCampaignResults({
                     className="h-5 w-5 p-0"
                     onClick={() =>
                       copyToClipboard(
-                        typeof video === "object"
-                          ? JSON.stringify(video)
-                          : video,
-                        `video-${index}`
+                        typeof group === "object"
+                          ? JSON.stringify(group)
+                          : group,
+                        `group-${index}`
                       )
                     }
                   >
                     <Copy className="h-3 w-3" />
                   </Button>
                 </div>
-                <div className="space-y-2">
-                  <p className="text-xs text-gray-600 leading-relaxed">
-                    {typeof video === "object"
-                      ? video.script || video.description
-                      : video}
-                  </p>
-                  {typeof video === "object" && (
-                    <div className="flex items-center gap-4 text-xs text-gray-500">
-                      {video.orientation && (
-                        <span>Format: {video.orientation}</span>
-                      )}
-                      {video.duration && (
-                        <span>Duration: {video.duration}</span>
-                      )}
-                    </div>
-                  )}
-                </div>
+                {typeof group === "object" && (
+                  <div className="space-y-2">
+                    {group.filter && (
+                      <div className="text-xs text-gray-600">
+                        <span className="font-medium">Filter:</span>{" "}
+                        {group.filter}
+                      </div>
+                    )}
+                    {group.bidAdjustment && (
+                      <div className="text-xs text-gray-600">
+                        <span className="font-medium">Bid Adjustment:</span>{" "}
+                        {group.bidAdjustment}
+                      </div>
+                    )}
+                  </div>
+                )}
                 <div className="mt-3 flex items-center gap-2">
                   <Badge
                     variant="outline"
-                    className="bg-red-50 text-red-700 border-red-200 text-xs"
+                    className="bg-indigo-50 text-indigo-700 border-indigo-200 text-xs"
                   >
-                    {typeof video === "object" && video.orientation === "9:16"
-                      ? "Portrait Video"
-                      : "Landscape Video"}
+                    Product Group
                   </Badge>
                   <span className="text-xs text-gray-400">
-                    Video {index + 1}
+                    Group {index + 1}
                   </span>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  const renderDiagnostics = () => {
+    if (
+      !assetData.diagnostics ||
+      Object.keys(assetData.diagnostics).length === 0
+    ) {
+      return (
+        <div className="text-center py-8">
+          <AlertCircle className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+          <p className="text-sm text-gray-500">No diagnostics available</p>
+        </div>
+      );
+    }
+
+    return (
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-base font-medium">Feed Diagnostics</h2>
+            <p className="text-xs text-gray-500">
+              Product feed optimization recommendations
+            </p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {Object.entries(assetData.diagnostics).map(([key, value], index) => (
+            <Card key={index} className="border border-gray-200">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <AlertCircle className="h-4 w-4 text-amber-500" />
+                  <h4 className="text-sm font-medium text-gray-900 capitalize">
+                    {key.replace(/([A-Z])/g, " $1")}
+                  </h4>
+                </div>
+                <p className="text-xs text-gray-600 leading-relaxed">
+                  {Array.isArray(value) ? value.join(", ") : value}
+                </p>
+                <div className="mt-3">
+                  <Badge
+                    variant="outline"
+                    className="bg-amber-50 text-amber-700 border-amber-200 text-xs"
+                  >
+                    Needs Attention
+                  </Badge>
                 </div>
               </CardContent>
             </Card>
@@ -272,66 +230,53 @@ export default function AppCampaignResults({
   const generateTabs = () => {
     const tabs = [];
 
-    // Headlines
-    if (assetData.headlines && assetData.headlines.length > 0) {
+    if (assetData.productGroups && assetData.productGroups.length > 0) {
       tabs.push({
-        id: "headlines",
-        label: "Headlines",
-        icon: Megaphone,
-        count: assetData.headlines.length,
-        subtitle: "headlines",
+        id: "products",
+        label: "Product Groups",
+        icon: Package,
+        count: assetData.productGroups.length,
+        subtitle: "groups",
+        color: "indigo",
+      });
+    }
+
+    if (assetData.productTitles && assetData.productTitles.length > 0) {
+      tabs.push({
+        id: "titles",
+        label: "Product Titles",
+        icon: FileText,
+        count: assetData.productTitles.length,
+        subtitle: "titles",
         color: "blue",
       });
     }
 
-    // Descriptions
-    if (assetData.descriptions && assetData.descriptions.length > 0) {
+    if (
+      assetData.productDescriptions &&
+      assetData.productDescriptions.length > 0
+    ) {
       tabs.push({
         id: "descriptions",
         label: "Descriptions",
-        icon: Building,
-        count: assetData.descriptions.length,
+        icon: FileText,
+        count: assetData.productDescriptions.length,
         subtitle: "descriptions",
         color: "green",
       });
     }
 
-    // Images
-    if (assetData.images && assetData.images.length > 0) {
-      tabs.push({
-        id: "images",
-        label: "Images",
-        icon: ImageIcon,
-        count: assetData.images.length,
-        subtitle: "images",
-        color: "orange",
-      });
-    }
-
-    // Videos
-    if (assetData.videos && assetData.videos.length > 0) {
-      tabs.push({
-        id: "videos",
-        label: "Videos",
-        icon: Video,
-        count: assetData.videos.length,
-        subtitle: "videos",
-        color: "red",
-      });
-    }
-
-    // App Store Optimization
     if (
-      assetData.appStoreOptimization &&
-      Object.keys(assetData.appStoreOptimization).length > 0
+      assetData.diagnostics &&
+      Object.keys(assetData.diagnostics).length > 0
     ) {
       tabs.push({
-        id: "aso",
-        label: "App Store SEO",
-        icon: Search,
-        count: 1,
-        subtitle: "optimization",
-        color: "purple",
+        id: "diagnostics",
+        label: "Diagnostics",
+        icon: AlertCircle,
+        count: Object.keys(assetData.diagnostics).length,
+        subtitle: "issues",
+        color: "amber",
       });
     }
 
@@ -341,7 +286,7 @@ export default function AppCampaignResults({
   const tabs = generateTabs();
 
   return (
-    <div className="mx-auto max-w-6xl">
+    <div className="mx-auto ">
       {/* Campaign Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
@@ -355,11 +300,11 @@ export default function AppCampaignResults({
           </Button>
           <div>
             <h1 className="text-lg font-medium flex items-center gap-2">
-              <Smartphone className="h-4 w-4" />
+              <ShoppingCart className="h-4 w-4" />
               {campaignName}
             </h1>
             <p className="text-xs text-gray-500">
-              App Campaign • Generated {new Date().toLocaleDateString()}
+              Shopping Campaign • Generated {new Date().toLocaleDateString()}
             </p>
           </div>
         </div>
@@ -390,20 +335,17 @@ export default function AppCampaignResults({
             const IconComponent = tab.icon;
             const isActive = activeTab === tab.id;
             const colorClasses = {
+              indigo: isActive
+                ? "border-indigo-500 text-indigo-600"
+                : "border-transparent text-gray-600 hover:text-gray-900",
               blue: isActive
                 ? "border-blue-500 text-blue-600"
                 : "border-transparent text-gray-600 hover:text-gray-900",
               green: isActive
                 ? "border-green-500 text-green-600"
                 : "border-transparent text-gray-600 hover:text-gray-900",
-              orange: isActive
-                ? "border-orange-500 text-orange-600"
-                : "border-transparent text-gray-600 hover:text-gray-900",
-              red: isActive
-                ? "border-red-500 text-red-600"
-                : "border-transparent text-gray-600 hover:text-gray-900",
-              purple: isActive
-                ? "border-purple-500 text-purple-600"
+              amber: isActive
+                ? "border-amber-500 text-amber-600"
                 : "border-transparent text-gray-600 hover:text-gray-900",
             };
 
@@ -426,15 +368,13 @@ export default function AppCampaignResults({
                   <Badge
                     variant="secondary"
                     className={`${
-                      tab.color === "blue"
+                      tab.color === "indigo"
+                        ? "bg-indigo-50 text-indigo-700"
+                        : tab.color === "blue"
                         ? "bg-blue-50 text-blue-700"
                         : tab.color === "green"
                         ? "bg-green-50 text-green-700"
-                        : tab.color === "orange"
-                        ? "bg-orange-50 text-orange-700"
-                        : tab.color === "red"
-                        ? "bg-red-50 text-red-700"
-                        : "bg-purple-50 text-purple-700"
+                        : "bg-amber-50 text-amber-700"
                     } text-xs px-1.5 py-0.5`}
                   >
                     {tab.count}
@@ -448,14 +388,20 @@ export default function AppCampaignResults({
 
       {/* Tab Content */}
       <div className="mt-4">
-        <div className={activeTab === "headlines" ? "block" : "hidden"}>
+        <div className={activeTab === "products" ? "block" : "hidden"}>
+          <Card className="border border-gray-200 shadow-sm">
+            <CardContent className="p-4">{renderProductGroups()}</CardContent>
+          </Card>
+        </div>
+
+        <div className={activeTab === "titles" ? "block" : "hidden"}>
           <Card className="border border-gray-200 shadow-sm">
             <CardContent className="p-4">
               {renderAssetList(
-                assetData.headlines,
-                "App Headlines",
-                "headlines",
-                30
+                assetData.productTitles,
+                "Product Titles",
+                "titles",
+                70
               )}
             </CardContent>
           </Card>
@@ -465,34 +411,18 @@ export default function AppCampaignResults({
           <Card className="border border-gray-200 shadow-sm">
             <CardContent className="p-4">
               {renderAssetList(
-                assetData.descriptions,
-                "App Descriptions",
+                assetData.productDescriptions,
+                "Product Descriptions",
                 "descriptions",
-                90
+                175
               )}
             </CardContent>
           </Card>
         </div>
 
-        <div className={activeTab === "images" ? "block" : "hidden"}>
+        <div className={activeTab === "diagnostics" ? "block" : "hidden"}>
           <Card className="border border-gray-200 shadow-sm">
-            <CardContent className="p-4">
-              {renderAssetList(assetData.images, "Image Assets", "images")}
-            </CardContent>
-          </Card>
-        </div>
-
-        <div className={activeTab === "videos" ? "block" : "hidden"}>
-          <Card className="border border-gray-200 shadow-sm">
-            <CardContent className="p-4">{renderVideoAssets()}</CardContent>
-          </Card>
-        </div>
-
-        <div className={activeTab === "aso" ? "block" : "hidden"}>
-          <Card className="border border-gray-200 shadow-sm">
-            <CardContent className="p-4">
-              {renderAppStoreOptimization()}
-            </CardContent>
+            <CardContent className="p-4">{renderDiagnostics()}</CardContent>
           </Card>
         </div>
       </div>

@@ -82,7 +82,7 @@ export default function LoginPage() {
         </button>
 
         {/* OR Divider */}
-        <div className="relative">
+        {/* <div className="relative">
           <div className="absolute inset-0 flex items-center">
             <span className="w-full border-t border-gray-300" />
           </div>
@@ -91,11 +91,9 @@ export default function LoginPage() {
               OR
             </span>
           </div>
-        </div>
+        </div> */}
 
-        {/* Login Form */}
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Email Input */}
+        {/* <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <label
               htmlFor="email"
@@ -113,7 +111,7 @@ export default function LoginPage() {
             />
           </div>
 
-          {/* Password Input */}
+
           <div className="space-y-2">
             <label
               htmlFor="password"
@@ -175,7 +173,7 @@ export default function LoginPage() {
             </div>
           </div>
 
-          {/* Stay signed in and Forgot password */}
+         
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <input
@@ -200,7 +198,7 @@ export default function LoginPage() {
             </button>
           </div>
 
-          {/* Continue Button */}
+        
           <button
             type="submit"
             disabled={loading}
@@ -208,10 +206,9 @@ export default function LoginPage() {
           >
             {loading ? "Signing in..." : "Continue"}
           </button>
-        </form>
+        </form> */}
 
-        {/* Register Link */}
-        <p className="text-center text-sm text-gray-600">
+        {/* <p className="text-center text-sm text-gray-600">
           Don't have an account?{" "}
           <a
             href="/auth/register"
@@ -219,7 +216,7 @@ export default function LoginPage() {
           >
             Register
           </a>
-        </p>
+        </p> */}
       </div>
     </div>
   );

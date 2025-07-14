@@ -1,5 +1,4 @@
 "use client";
-
 import React, { useState, useEffect } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -13,6 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Loader2,
   Sparkles,
@@ -23,10 +23,8 @@ import {
   ShoppingCart,
   Play,
   Smartphone,
-  TrendingUp,
   AlertCircle,
-  CheckCircle2,
-  RefreshCcw, // <-- Added CheckCircle2 for success message
+  RefreshCcw,
 } from "lucide-react";
 import {
   Card,
@@ -36,13 +34,39 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import CampaignResults from "@/components/dashboard/global/CampaignResults";
-import { Avatar } from "@/components/ui/avatar";
-import { AvatarImage } from "@radix-ui/react-avatar"; // This seems to be incorrect, should be from @/components/ui/avatar
-import { useRouter } from "next/navigation"; // <-- Import useRouter
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Loader from "@/components/dashboard/global/Loader";
-import { set } from "date-fns";
+
+// Extra questions that can be added to any campaign type
+const EXTRA_QUESTIONS = [
+  {
+    id: "brand_voice",
+    label: "Brand Voice (3 adjectives)",
+    type: "input",
+    placeholder: "e.g. Friendly, Trustworthy, Innovative",
+    required: false,
+  },
+  {
+    id: "unique_selling_point",
+    label: "Unique Selling Point *",
+    type: "textarea",
+    placeholder: "e.g. 30% faster than competitors, lifetime warranty",
+    required: true,
+  },
+  {
+    id: "compliance_musts",
+    label: "Compliance Notes",
+    type: "textarea",
+    placeholder: "e.g. Avoid medical claims, include risk disclaimer",
+    required: false,
+  },
+];
+
+// Helper function to combine base questions with extra questions
+const withExtras = (baseQuestions) => {
+  return [...baseQuestions, ...EXTRA_QUESTIONS];
+};
 
 // Campaign type configurations
 const campaignTypeConfig = {
@@ -54,7 +78,7 @@ const campaignTypeConfig = {
     questions: [
       {
         id: "business",
-        label: "Business Description",
+        label: "Business Description & USP",
         type: "textarea",
         placeholder: "e.g., Fitness coaching service for busy professionals...",
         required: true,
@@ -288,66 +312,48 @@ const campaignTypeConfig = {
   },
   pmax: {
     name: "Performance Max",
-    icon: TrendingUp,
-    description: "Maximize performance across all Google channels",
+    icon: Sparkles,
+    description: "Omnichannel automated campaign to hit your goals",
     generates: [
+      "Asset Groups",
       "Audience Signals",
-      "Headlines",
-      "Descriptions",
-      "Asset Recommendations",
+      "Headline Variants",
+      "Concepts",
     ],
-    questions: [
+    questions: withExtras([
       {
-        id: "business_overview",
-        label: "Business Overview",
+        id: "business",
+        label: "Business Description *",
         type: "textarea",
-        placeholder: "e.g., B2B SaaS providing project management tools...",
         required: true,
       },
       {
-        id: "customer_journey",
-        label: "Customer Journey",
+        id: "target_audience",
+        label: "Target Audience *",
         type: "textarea",
-        placeholder:
-          "e.g., Discover through search, try free trial, upgrade after seeing results...",
         required: true,
       },
       {
-        id: "high_value_customers",
-        label: "Best Customers",
-        type: "textarea",
-        placeholder:
-          "e.g., Growing companies with 10-100 employees, tech-savvy teams...",
+        id: "location",
+        label: "Target Locations *",
+        type: "input",
         required: true,
       },
       {
-        id: "conversion_actions",
-        label: "Key Conversions",
+        id: "primary_goal",
+        label: "Primary Goal *",
         type: "select",
-        options: [
-          "Purchases",
-          "Leads/Sign-ups",
-          "Phone calls",
-          "Store visits",
-          "App installs",
-        ],
+        options: ["Sales", "Leads", "Traffic", "Brand awareness"],
         required: true,
       },
       {
-        id: "seasonal_patterns",
-        label: "Seasonality",
+        id: "conversion_action",
+        label: "Conversion Action (name) *",
         type: "input",
-        placeholder: "e.g., Higher demand in Q1, slower in summer",
-        required: false,
-      },
-      {
-        id: "geographic_focus",
-        label: "Best Locations",
-        type: "input",
-        placeholder: "e.g., United States, Canada, UK, Australia",
+        placeholder: "e.g. Purchase, Form Submit",
         required: true,
       },
-    ],
+    ]),
   },
   app: {
     name: "App",
@@ -439,7 +445,7 @@ const objectiveToCampaignType = {
 };
 
 export default function GoogleAdsPage() {
-  const router = useRouter(); // Initialize router
+  const router = useRouter();
   const [currentStep, setCurrentStep] = useState(1);
   const [campaignName, setCampaignName] = useState("");
   const [budget, setBudget] = useState("");
@@ -451,9 +457,8 @@ export default function GoogleAdsPage() {
   const [answers, setAnswers] = useState({});
   const [generatedAssets, setGeneratedAssets] = useState(null);
   const [saveLoading, setSaveLoading] = useState(false);
-  const [saveSuccess, setSaveSuccess] = useState(false); // New state for save button loading
-  const [saveError, setSaveError] = useState(""); // New state for save error message
-
+  const [saveSuccess, setSaveSuccess] = useState(false);
+  const [saveError, setSaveError] = useState("");
   const totalSteps = 3;
 
   // Auto-select campaign type based on objective
@@ -508,8 +513,7 @@ export default function GoogleAdsPage() {
     e.preventDefault();
     setLoading(true);
     setError("");
-    setSaveSuccess(false); // Reset save success on new generation
-
+    setSaveSuccess(false);
     try {
       const response = await fetch("/api/campaign/generate", {
         method: "POST",
@@ -526,21 +530,19 @@ export default function GoogleAdsPage() {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      const data = await response.json(); // This 'data' is the generated assets
-      setGeneratedAssets(data); // Update state after successfully getting data
+      const data = await response.json();
+      setGeneratedAssets(data);
       setCurrentStep(4);
 
       try {
-        // Use the 'data' directly for generatedAssets in campaignToSave
-        // to ensure you send the most current generated data
         const campaignToSave = {
           campaignName,
           budget,
           currency,
           objective,
           campaignType,
-          answers, // Include the input answers
-          generatedAssets: data, // <--- CHANGE IS HERE: Use 'data' directly
+          answers,
+          generatedAssets: data,
         };
 
         const response = await fetch("/api/firebase/save-google-ads/", {
@@ -555,11 +557,9 @@ export default function GoogleAdsPage() {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
 
-        const savedData = await response.json(); // Renamed to avoid conflict with 'data' above
+        const savedData = await response.json();
         console.log("Campaign saved successfully:", savedData.campaignId);
         setSaveSuccess(true);
-
-        // No immediate redirect here, user can click "Go to Campaigns"
       } catch (error) {
         console.error("Failed to save campaign:", error);
         setSaveError("Failed to save campaign. Please try again.");
@@ -584,8 +584,8 @@ export default function GoogleAdsPage() {
         currency,
         objective,
         campaignType,
-        answers, // Include the input answers
-        generatedAssets, // Include the generated assets
+        answers,
+        generatedAssets,
       };
 
       const response = await fetch("/api/firebase/save-google-ads/", {
@@ -604,9 +604,6 @@ export default function GoogleAdsPage() {
       console.log("Campaign saved successfully:", data.campaignId);
       setSaveSuccess(true);
       setSaveError("");
-
-      // Set success to true
-      // No immediate redirect here, user can click "Go to Campaigns"
     } catch (error) {
       console.error("Failed to save campaign:", error);
       setError("Failed to save campaign. Please try again.");
@@ -625,7 +622,7 @@ export default function GoogleAdsPage() {
     setGeneratedAssets(null);
     setError("");
     setSaveError("");
-    setSaveSuccess(false); // Reset save success on starting a new campaign
+    setSaveSuccess(false);
   };
 
   const renderStepContent = () => {
@@ -656,7 +653,6 @@ export default function GoogleAdsPage() {
                       className="mt-1"
                     />
                   </div>
-
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <Label className="text-sm font-medium">
@@ -670,7 +666,7 @@ export default function GoogleAdsPage() {
                           <SelectContent>
                             <SelectItem value="USD">USD</SelectItem>
                             <SelectItem value="EUR">EUR</SelectItem>
-                            <SelectItem value="GBP">GBP</SelectItem>
+                            <SelectItem value="INR">INR</SelectItem>
                             <SelectItem value="CAD">CAD</SelectItem>
                           </SelectContent>
                         </Select>
@@ -686,7 +682,6 @@ export default function GoogleAdsPage() {
                   </div>
                 </CardContent>
               </Card>
-
               {/* Right Column - Objective */}
               <Card className="h-fit">
                 <CardHeader className="pb-4">
@@ -720,7 +715,6 @@ export default function GoogleAdsPage() {
                       </Button>
                     ))}
                   </div>
-
                   {campaignType && campaignTypeConfig[campaignType] && (
                     <div className="mt-4 p-3 bg-green-50 rounded-lg border border-green-200">
                       <div className="flex items-center gap-2 mb-1">
@@ -757,7 +751,6 @@ export default function GoogleAdsPage() {
             </div>
           </div>
         );
-
       case 2:
         if (!campaignType || !campaignTypeConfig[campaignType]) {
           return (
@@ -767,10 +760,9 @@ export default function GoogleAdsPage() {
             </div>
           );
         }
-
         const config = campaignTypeConfig[campaignType];
         return (
-          <div className="max-w-5xl mx-auto">
+          <div className=" mx-auto">
             <div className="mb-6">
               <div className="flex items-center gap-3 mb-2">
                 {React.createElement(config.icon, {
@@ -782,11 +774,10 @@ export default function GoogleAdsPage() {
               </div>
               <p className="text-gray-600 text-sm">{config.description}</p>
             </div>
-
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {config.questions.map((question, index) => (
-                <Card key={question.id} className="h-fit">
-                  <CardContent className="p-4">
+                <Card key={question.id} className="h-fill">
+                  <CardContent className="my-auto">
                     <Label
                       htmlFor={question.id}
                       className="text-sm font-medium flex items-center gap-2 mb-2"
@@ -796,7 +787,6 @@ export default function GoogleAdsPage() {
                         <span className="text-red-500 text-xs">*</span>
                       )}
                     </Label>
-
                     {question.type === "textarea" && (
                       <Textarea
                         id={question.id}
@@ -809,7 +799,6 @@ export default function GoogleAdsPage() {
                         className="resize-none text-sm"
                       />
                     )}
-
                     {question.type === "input" && (
                       <Input
                         id={question.id}
@@ -821,7 +810,6 @@ export default function GoogleAdsPage() {
                         className="text-sm"
                       />
                     )}
-
                     {question.type === "select" && (
                       <Select
                         value={answers[question.id] || ""}
@@ -848,9 +836,9 @@ export default function GoogleAdsPage() {
                 </Card>
               ))}
             </div>
+            {/* Add this after the questions grid */}
           </div>
         );
-
       case 3:
         return (
           <div className=" mx-auto">
@@ -890,7 +878,6 @@ export default function GoogleAdsPage() {
                     </p>
                   </div>
                 </div>
-
                 <div>
                   <h4 className="font-medium mb-3 text-sm">Strategic Inputs</h4>
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
@@ -910,10 +897,9 @@ export default function GoogleAdsPage() {
             </Card>
           </div>
         );
-
       case 4:
         return !loading ? (
-          <div className="mx-auto max-w-7xl">
+          <div className="mx-auto ">
             <div className="p-8 bg-gradient-to-r from-teal-400 to-indigo-600 rounded-xl ">
               <h5 className="font-medium mb-3 text-base text-white drop-shadow">
                 {campaignTypeConfig[campaignType]?.name} Strategy Created
@@ -947,7 +933,6 @@ export default function GoogleAdsPage() {
         ) : (
           <Loader />
         );
-
       default:
         return null;
     }
@@ -958,23 +943,25 @@ export default function GoogleAdsPage() {
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div className="flex items-center justify-center rounded-full p-2 ring-1 ring-gray-300">
-              <img
-                src="https://cdn4.iconfinder.com/data/icons/logos-brands-7/512/google_ads-1024.png"
-                alt="Google Ads"
-                className="w-10 h-10"
-              />
+          {currentStep === 1 && (
+            <div className="flex items-center gap-4">
+              <div className="flex items-center justify-center rounded-full p-2 ring-1 ring-gray-300">
+                <img
+                  src="https://cdn4.iconfinder.com/data/icons/logos-brands-7/512/google_ads-1024.png"
+                  alt="Google Ads"
+                  className="w-10 h-10"
+                />
+              </div>
+              <div>
+                <h1 className="text-2xl font-semibold mb-1">
+                  Google Ads Campaign
+                </h1>
+                <p className="text-gray-600 text-sm">
+                  Create strategic campaigns with AI-generated assets
+                </p>
+              </div>
             </div>
-            <div>
-              <h1 className="text-2xl font-semibold mb-1">
-                Google Ads Campaign
-              </h1>
-              <p className="text-gray-600 text-sm">
-                Create strategic campaigns with AI-generated assets
-              </p>
-            </div>
-          </div>
+          )}
           {currentStep <= 3 && (
             <div className="flex items-center gap-4">
               <div className="text-sm text-gray-500">
@@ -1019,7 +1006,6 @@ export default function GoogleAdsPage() {
             <ChevronLeft className="w-4 h-4 mr-1" />
             Previous
           </Button>
-
           {currentStep < 3 ? (
             <Button
               type="button"

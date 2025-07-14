@@ -1,14 +1,17 @@
-import { Geist, Geist_Mono } from "next/font/google";
+import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
+import { Open_Sans } from "next/font/google"; // Note the underscore for Open Sans
+import { Manrope } from "next/font/google";
+import { cn } from "@/lib/utils";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+// Define the Open Sans font with desired weights and subsets
+const openSans = Manrope({
   subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+  display: "swap", // Optimizes font loading
+  // You can specify individual weights or a range, e.g.:
+  weight: ["300", "400", "500", "700"],
+  // Or, if you want all variable weights (if available for Open Sans):
+  // weight: ['variable'],
 });
 
 export const metadata = {
@@ -19,9 +22,8 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+      <body className={cn(openSans.className)}>
+        <Toaster />
         {children}
       </body>
     </html>

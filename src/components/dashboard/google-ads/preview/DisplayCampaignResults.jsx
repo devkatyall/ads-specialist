@@ -6,24 +6,23 @@ import { Button } from "@/components/ui/button";
 import {
   Copy,
   Download,
-  Smartphone,
+  Globe,
   Plus,
   Calendar,
   ArrowLeft,
+  Users,
   Megaphone,
-  Building,
   ImageIcon,
-  Video,
-  Search,
+  Building,
 } from "lucide-react";
 import { toast } from "sonner";
 
-export default function AppCampaignResults({
+export default function DisplayCampaignResults({
   campaignName,
   generatedAssets,
   onCreateAnother,
 }) {
-  const [activeTab, setActiveTab] = useState("headlines");
+  const [activeTab, setActiveTab] = useState("audiences");
   const [assetData, setAssetData] = useState(generatedAssets);
 
   const copyToClipboard = async (text, itemId) => {
@@ -35,7 +34,7 @@ export default function AppCampaignResults({
     }
   };
 
-  const renderAssetList = (items, title, type, maxLength = null) => {
+  const renderAssetList = (items, title, type) => {
     if (!items || items.length === 0) return null;
 
     return (
@@ -58,22 +57,24 @@ export default function AppCampaignResults({
               key={index}
               className="flex items-start justify-between p-2 bg-gray-50 rounded-md hover:bg-gray-100 transition-colors group"
             >
-              <span className="text-xs flex-1 leading-relaxed">{item}</span>
-              <div className="flex items-center gap-2 ml-2">
-                {maxLength && (
-                  <span className="text-xs text-gray-400">
-                    {item.length}/{maxLength}
-                  </span>
-                )}
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="opacity-0 group-hover:opacity-100 transition-opacity h-5 w-5 p-0"
-                  onClick={() => copyToClipboard(item, `${type}-${index}`)}
-                >
-                  <Copy className="h-3 w-3" />
-                </Button>
-              </div>
+              <span className="text-xs flex-1 leading-relaxed">
+                {typeof item === "object"
+                  ? item.name || item.definition || JSON.stringify(item)
+                  : item}
+              </span>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="opacity-0 group-hover:opacity-100 transition-opacity h-5 w-5 p-0"
+                onClick={() =>
+                  copyToClipboard(
+                    typeof item === "object" ? JSON.stringify(item) : item,
+                    `${type}-${index}`
+                  )
+                }
+              >
+                <Copy className="h-3 w-3" />
+              </Button>
             </div>
           ))}
         </div>
@@ -81,16 +82,15 @@ export default function AppCampaignResults({
     );
   };
 
-  const renderAppStoreOptimization = () => {
-    if (!assetData.appStoreOptimization) return null;
-
+  const renderTargetAudiences = () => {
     return (
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-base font-medium">App Store Optimization</h2>
+            <h2 className="text-base font-medium">Target Audiences</h2>
             <p className="text-xs text-gray-500">
-              Keywords and metadata for app store visibility
+              {assetData.targetAudiences?.length || 0} audience segments for
+              precise targeting
             </p>
           </div>
           <div className="flex gap-1.5">
@@ -100,96 +100,7 @@ export default function AppCampaignResults({
               className="h-7 px-2 text-xs bg-transparent"
             >
               <Plus className="h-3 w-3 mr-1" />
-              Add Keywords
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-7 px-2 text-xs bg-transparent"
-            >
-              <Download className="h-3 w-3 mr-1" />
-              Export
-            </Button>
-          </div>
-        </div>
-
-        <Card className="border border-gray-200">
-          <CardContent className="p-4">
-            <div className="space-y-4">
-              {assetData.appStoreOptimization.keywords && (
-                <div>
-                  <h4 className="text-sm font-medium text-gray-900 mb-2">
-                    App Store Keywords
-                  </h4>
-                  <div className="p-3 bg-gray-50 rounded-md">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs text-gray-600">
-                        Keywords (comma-separated)
-                      </span>
-                      <span className="text-xs text-gray-400">
-                        {assetData.appStoreOptimization.keywords.length}/100
-                        chars
-                      </span>
-                    </div>
-                    <p className="text-xs font-mono">
-                      {assetData.appStoreOptimization.keywords}
-                    </p>
-                  </div>
-                </div>
-              )}
-
-              {assetData.appStoreOptimization.title && (
-                <div>
-                  <h4 className="text-sm font-medium text-gray-900 mb-2">
-                    App Title
-                  </h4>
-                  <div className="p-3 bg-gray-50 rounded-md">
-                    <p className="text-xs">
-                      {assetData.appStoreOptimization.title}
-                    </p>
-                  </div>
-                </div>
-              )}
-
-              {assetData.appStoreOptimization.subtitle && (
-                <div>
-                  <h4 className="text-sm font-medium text-gray-900 mb-2">
-                    App Subtitle
-                  </h4>
-                  <div className="p-3 bg-gray-50 rounded-md">
-                    <p className="text-xs">
-                      {assetData.appStoreOptimization.subtitle}
-                    </p>
-                  </div>
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  };
-
-  const renderVideoAssets = () => {
-    if (!assetData.videos || assetData.videos.length === 0) return null;
-
-    return (
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-base font-medium">Video Assets</h2>
-            <p className="text-xs text-gray-500">
-              {assetData.videos.length} video concepts for app promotion
-            </p>
-          </div>
-          <div className="flex gap-1.5">
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-7 px-2 text-xs bg-transparent"
-            >
-              <Plus className="h-3 w-3 mr-1" />
-              Add Video
+              Add Audience
             </Button>
             <Button
               variant="outline"
@@ -203,17 +114,15 @@ export default function AppCampaignResults({
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {assetData.videos.map((video, index) => (
+          {assetData.targetAudiences?.map((audience, index) => (
             <Card
               key={index}
-              className="border border-gray-200 hover:border-red-300 transition-colors"
+              className="border border-gray-200 hover:border-purple-300 transition-colors"
             >
               <CardContent className="p-4">
                 <div className="flex items-start justify-between mb-2">
-                  <h4 className="text-sm font-medium text-red-600">
-                    {typeof video === "object"
-                      ? video.title || `Video ${index + 1}`
-                      : `Video ${index + 1}`}
+                  <h4 className="text-sm font-medium text-purple-600">
+                    {typeof audience === "object" ? audience.name : audience}
                   </h4>
                   <Button
                     variant="ghost"
@@ -221,44 +130,123 @@ export default function AppCampaignResults({
                     className="h-5 w-5 p-0"
                     onClick={() =>
                       copyToClipboard(
-                        typeof video === "object"
-                          ? JSON.stringify(video)
-                          : video,
-                        `video-${index}`
+                        typeof audience === "object"
+                          ? JSON.stringify(audience)
+                          : audience,
+                        `audience-${index}`
                       )
                     }
                   >
                     <Copy className="h-3 w-3" />
                   </Button>
                 </div>
-                <div className="space-y-2">
+                {typeof audience === "object" && audience.definition && (
                   <p className="text-xs text-gray-600 leading-relaxed">
-                    {typeof video === "object"
-                      ? video.script || video.description
-                      : video}
+                    {audience.definition}
                   </p>
-                  {typeof video === "object" && (
-                    <div className="flex items-center gap-4 text-xs text-gray-500">
-                      {video.orientation && (
-                        <span>Format: {video.orientation}</span>
-                      )}
-                      {video.duration && (
-                        <span>Duration: {video.duration}</span>
-                      )}
-                    </div>
-                  )}
-                </div>
+                )}
                 <div className="mt-3 flex items-center gap-2">
                   <Badge
                     variant="outline"
-                    className="bg-red-50 text-red-700 border-red-200 text-xs"
+                    className="bg-purple-50 text-purple-700 border-purple-200 text-xs"
                   >
-                    {typeof video === "object" && video.orientation === "9:16"
-                      ? "Portrait Video"
-                      : "Landscape Video"}
+                    Display Audience
                   </Badge>
                   <span className="text-xs text-gray-400">
-                    Video {index + 1}
+                    Segment {index + 1}
+                  </span>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  const renderImageConcepts = () => {
+    return (
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-base font-medium">Image Concepts</h2>
+            <p className="text-xs text-gray-500">
+              {assetData.imageConcepts?.length || 0} creative concepts for
+              display ads
+            </p>
+          </div>
+          <div className="flex gap-1.5">
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-7 px-2 text-xs bg-transparent"
+            >
+              <Plus className="h-3 w-3 mr-1" />
+              Add Concept
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-7 px-2 text-xs bg-transparent"
+            >
+              <Download className="h-3 w-3 mr-1" />
+              Export
+            </Button>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {assetData.imageConcepts?.map((concept, index) => (
+            <Card
+              key={index}
+              className="border border-gray-200 hover:border-orange-300 transition-colors"
+            >
+              <CardContent className="p-4">
+                <div className="flex items-start justify-between mb-2">
+                  <h4 className="text-sm font-medium text-orange-600">
+                    {typeof concept === "object" ? concept.concept : concept}
+                  </h4>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-5 w-5 p-0"
+                    onClick={() =>
+                      copyToClipboard(
+                        typeof concept === "object"
+                          ? JSON.stringify(concept)
+                          : concept,
+                        `concept-${index}`
+                      )
+                    }
+                  >
+                    <Copy className="h-3 w-3" />
+                  </Button>
+                </div>
+                {typeof concept === "object" && (
+                  <div className="space-y-2">
+                    {concept.orientation && (
+                      <div className="text-xs text-gray-600">
+                        <span className="font-medium">Size:</span>{" "}
+                        {concept.orientation}
+                      </div>
+                    )}
+                    {concept.reason && (
+                      <p className="text-xs text-gray-600 leading-relaxed">
+                        <span className="font-medium">Rationale:</span>{" "}
+                        {concept.reason}
+                      </p>
+                    )}
+                  </div>
+                )}
+                <div className="mt-3 flex items-center gap-2">
+                  <Badge
+                    variant="outline"
+                    className="bg-orange-50 text-orange-700 border-orange-200 text-xs"
+                  >
+                    Image Concept
+                  </Badge>
+                  <span className="text-xs text-gray-400">
+                    Concept {index + 1}
                   </span>
                 </div>
               </CardContent>
@@ -272,19 +260,29 @@ export default function AppCampaignResults({
   const generateTabs = () => {
     const tabs = [];
 
-    // Headlines
-    if (assetData.headlines && assetData.headlines.length > 0) {
+    if (assetData.targetAudiences && assetData.targetAudiences.length > 0) {
+      tabs.push({
+        id: "audiences",
+        label: "Target Audiences",
+        icon: Users,
+        count: assetData.targetAudiences.length,
+        subtitle: "audiences",
+        color: "purple",
+      });
+    }
+
+    if (assetData.shortHeadlines && assetData.shortHeadlines.length > 0) {
       tabs.push({
         id: "headlines",
         label: "Headlines",
         icon: Megaphone,
-        count: assetData.headlines.length,
+        count:
+          assetData.shortHeadlines.length + (assetData.longHeadline ? 1 : 0),
         subtitle: "headlines",
         color: "blue",
       });
     }
 
-    // Descriptions
     if (assetData.descriptions && assetData.descriptions.length > 0) {
       tabs.push({
         id: "descriptions",
@@ -296,42 +294,14 @@ export default function AppCampaignResults({
       });
     }
 
-    // Images
-    if (assetData.images && assetData.images.length > 0) {
+    if (assetData.imageConcepts && assetData.imageConcepts.length > 0) {
       tabs.push({
         id: "images",
-        label: "Images",
+        label: "Image Concepts",
         icon: ImageIcon,
-        count: assetData.images.length,
-        subtitle: "images",
+        count: assetData.imageConcepts.length,
+        subtitle: "concepts",
         color: "orange",
-      });
-    }
-
-    // Videos
-    if (assetData.videos && assetData.videos.length > 0) {
-      tabs.push({
-        id: "videos",
-        label: "Videos",
-        icon: Video,
-        count: assetData.videos.length,
-        subtitle: "videos",
-        color: "red",
-      });
-    }
-
-    // App Store Optimization
-    if (
-      assetData.appStoreOptimization &&
-      Object.keys(assetData.appStoreOptimization).length > 0
-    ) {
-      tabs.push({
-        id: "aso",
-        label: "App Store SEO",
-        icon: Search,
-        count: 1,
-        subtitle: "optimization",
-        color: "purple",
       });
     }
 
@@ -341,7 +311,7 @@ export default function AppCampaignResults({
   const tabs = generateTabs();
 
   return (
-    <div className="mx-auto max-w-6xl">
+    <div className="mx-auto ">
       {/* Campaign Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
@@ -355,11 +325,11 @@ export default function AppCampaignResults({
           </Button>
           <div>
             <h1 className="text-lg font-medium flex items-center gap-2">
-              <Smartphone className="h-4 w-4" />
+              <Globe className="h-4 w-4" />
               {campaignName}
             </h1>
             <p className="text-xs text-gray-500">
-              App Campaign • Generated {new Date().toLocaleDateString()}
+              Display Campaign • Generated {new Date().toLocaleDateString()}
             </p>
           </div>
         </div>
@@ -390,6 +360,9 @@ export default function AppCampaignResults({
             const IconComponent = tab.icon;
             const isActive = activeTab === tab.id;
             const colorClasses = {
+              purple: isActive
+                ? "border-purple-500 text-purple-600"
+                : "border-transparent text-gray-600 hover:text-gray-900",
               blue: isActive
                 ? "border-blue-500 text-blue-600"
                 : "border-transparent text-gray-600 hover:text-gray-900",
@@ -398,12 +371,6 @@ export default function AppCampaignResults({
                 : "border-transparent text-gray-600 hover:text-gray-900",
               orange: isActive
                 ? "border-orange-500 text-orange-600"
-                : "border-transparent text-gray-600 hover:text-gray-900",
-              red: isActive
-                ? "border-red-500 text-red-600"
-                : "border-transparent text-gray-600 hover:text-gray-900",
-              purple: isActive
-                ? "border-purple-500 text-purple-600"
                 : "border-transparent text-gray-600 hover:text-gray-900",
             };
 
@@ -426,15 +393,13 @@ export default function AppCampaignResults({
                   <Badge
                     variant="secondary"
                     className={`${
-                      tab.color === "blue"
+                      tab.color === "purple"
+                        ? "bg-purple-50 text-purple-700"
+                        : tab.color === "blue"
                         ? "bg-blue-50 text-blue-700"
                         : tab.color === "green"
                         ? "bg-green-50 text-green-700"
-                        : tab.color === "orange"
-                        ? "bg-orange-50 text-orange-700"
-                        : tab.color === "red"
-                        ? "bg-red-50 text-red-700"
-                        : "bg-purple-50 text-purple-700"
+                        : "bg-orange-50 text-orange-700"
                     } text-xs px-1.5 py-0.5`}
                   >
                     {tab.count}
@@ -448,14 +413,29 @@ export default function AppCampaignResults({
 
       {/* Tab Content */}
       <div className="mt-4">
+        <div className={activeTab === "audiences" ? "block" : "hidden"}>
+          <Card className="border border-gray-200 shadow-sm">
+            <CardContent className="p-4">{renderTargetAudiences()}</CardContent>
+          </Card>
+        </div>
+
         <div className={activeTab === "headlines" ? "block" : "hidden"}>
           <Card className="border border-gray-200 shadow-sm">
             <CardContent className="p-4">
               {renderAssetList(
-                assetData.headlines,
-                "App Headlines",
-                "headlines",
-                30
+                assetData.shortHeadlines,
+                "Short Headlines",
+                "headlines"
+              )}
+              {assetData.longHeadline && (
+                <div className="mt-4">
+                  <h3 className="text-sm font-medium text-gray-900 mb-2">
+                    Long Headline
+                  </h3>
+                  <div className="p-2 bg-gray-50 rounded-md">
+                    <span className="text-xs">{assetData.longHeadline}</span>
+                  </div>
+                </div>
               )}
             </CardContent>
           </Card>
@@ -466,9 +446,8 @@ export default function AppCampaignResults({
             <CardContent className="p-4">
               {renderAssetList(
                 assetData.descriptions,
-                "App Descriptions",
-                "descriptions",
-                90
+                "Ad Descriptions",
+                "descriptions"
               )}
             </CardContent>
           </Card>
@@ -476,23 +455,7 @@ export default function AppCampaignResults({
 
         <div className={activeTab === "images" ? "block" : "hidden"}>
           <Card className="border border-gray-200 shadow-sm">
-            <CardContent className="p-4">
-              {renderAssetList(assetData.images, "Image Assets", "images")}
-            </CardContent>
-          </Card>
-        </div>
-
-        <div className={activeTab === "videos" ? "block" : "hidden"}>
-          <Card className="border border-gray-200 shadow-sm">
-            <CardContent className="p-4">{renderVideoAssets()}</CardContent>
-          </Card>
-        </div>
-
-        <div className={activeTab === "aso" ? "block" : "hidden"}>
-          <Card className="border border-gray-200 shadow-sm">
-            <CardContent className="p-4">
-              {renderAppStoreOptimization()}
-            </CardContent>
+            <CardContent className="p-4">{renderImageConcepts()}</CardContent>
           </Card>
         </div>
       </div>
