@@ -84,12 +84,12 @@ const navigation = [
       },
       {
         title: "Budget Funnel",
-        url: "/dashboard/google-tools/budget-funnel",
+        url: "/dashboard/",
         icon: DollarSign,
       },
       {
         title: "Problem Solving",
-        url: "/dashboard/google-tools/problem-solving",
+        url: "/dashboard/",
         icon: Search,
       },
       // {
@@ -185,6 +185,16 @@ export function AppSidebar({ ...props }) {
                       <Link href={item.url}>
                         <item.icon className="h-4 w-4" />
                         <span>{item.title}</span>{" "}
+                        {item.title === "Budget Funnel" && (
+                          <span className="bg-blue-500 text-[8px] p-[2px] rounded text-white">
+                            Coming Soon
+                          </span>
+                        )}
+                        {item.title === "Problem Solving" && (
+                          <span className="bg-blue-500 text-[8px] p-[2px] rounded text-white">
+                            Coming Soon
+                          </span>
+                        )}
                         {/* Use Inter for navigation items */}
                       </Link>
                     </SidebarMenuButton>
