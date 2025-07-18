@@ -17,7 +17,7 @@ import GoogleAdsEditorTable from "@/components/dashboard/search-ads/ad-results";
 export default function SearchCampaignBuilder() {
   const [campaignName, setCampaignName] = useState("");
   const [businessAbout, setBusinessAbout] = useState("");
-  const [objective, setObjective] = useState("Lead Generation"); // default or let user pick
+  const [objective, setObjective] = useState(""); // default or let user pick
   const [landingPageUrl, setLandingPageUrl] = useState("");
   const [budget, setBudget] = useState("");
   const [loading, setLoading] = useState(false);
