@@ -113,13 +113,14 @@ export default function SearchCampaignBuilder() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="objective">Campaign Objective *</Label>
-                  <Input
+                  <Label htmlFor="objective">Detailed Campaign Objective *</Label>
+                  <Textarea
                     id="objective"
                     value={objective}
                     onChange={(e) => setObjective(e.target.value)}
-                    placeholder="e.g. Lead Generation, Website Traffic"
+                    placeholder="e.g. We are going to try to get people to visit website through deal: Buy 1 get one free"
                     required
+                      rows={3}
                   />
                 </div>
 
