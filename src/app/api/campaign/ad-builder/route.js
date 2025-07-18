@@ -2,8 +2,12 @@ import { NextResponse } from "next/server";
 
 export async function POST(req) {
   try {
-    const body = await req.json();
+    // 1. Construct the base URL from the request headers
+    const host = req.headers.get("host");
+    const protocol = process.env.NODE_ENV === "production" ? "https" : "http";
+    const baseUrl = `${protocol}://${host}`;
 
+    const body = await req.json();
     const { campaignName, businessAbout, objective, landingPageUrl, budget } =
       body;
 
@@ -22,21 +26,22 @@ export async function POST(req) {
 
     const campaignObjective = objective;
 
-    // 1. Crawl landing page to get content
+    // 2. Use the absolute URL for all internal fetch calls
+    // Crawl landing page
     const crawlRes = await fetch(
-      "/api/google-tools/crawl",
+      `${baseUrl}/api/google-tools/crawl`, // ✅ Correct
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ landingPage: landingPageUrl }), // key must be `landingPage`
+        body: JSON.stringify({ landingPage: landingPageUrl }),
       }
     );
     if (!crawlRes.ok) throw new Error("Failed to crawl landing page");
     const crawlData = await crawlRes.json();
 
-    // 2. Keyword research API
+    // Keyword research API
     const keywordRes = await fetch(
-      "/api/google-tools/keyword-research",
+      `${baseUrl}/api/google-tools/keyword-research`, // ✅ Correct
       {
         method: "POST",
         body: JSON.stringify({
@@ -53,9 +58,9 @@ export async function POST(req) {
     if (!keywordRes.ok) throw new Error("Failed in keyword research");
     const keywordData = await keywordRes.json();
 
-    // 3. Ad copy generation API
+    // Ad copy generation API
     const adCopyRes = await fetch(
-      "/api/google-tools/copy",
+      `${baseUrl}/api/google-tools/copy`, // ✅ Correct
       {
         method: "POST",
         body: JSON.stringify({
@@ -74,9 +79,9 @@ export async function POST(req) {
     if (!adCopyRes.ok) throw new Error("Failed in ad copy generation");
     const adCopyData = await adCopyRes.json();
 
-    // 4. Negative keywords generation API
+    // Negative keywords generation API
     const negativeKeywordsRes = await fetch(
-      "/api/google-tools/negative-keyword",
+      `${baseUrl}/api/google-tools/negative-keyword`, // ✅ Correct
       {
         method: "POST",
         body: JSON.stringify({
@@ -97,7 +102,7 @@ export async function POST(req) {
       throw new Error("Failed in negative keyword generation");
     const negativeKeywordsData = await negativeKeywordsRes.json();
 
-    // 5. Compose final response
+    // Compose final response
     const result = {
       crawl: crawlData.data,
       keywords: keywordData.data,
