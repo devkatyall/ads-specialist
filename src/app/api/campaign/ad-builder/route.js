@@ -55,7 +55,7 @@ export async function POST(req) {
 
     // 3. Ad copy generation API
     const adCopyRes = await fetch(
-      "/api/google-tools/copy`,
+      "/api/google-tools/copy",
       {
         method: "POST",
         body: JSON.stringify({
