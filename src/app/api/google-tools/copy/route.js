@@ -15,9 +15,12 @@ function buildAdCopyPrompt({
   return `<<SYSTEM>>
 Role: Senior Google Ads strategist with 20 years experience.
 
+Context: You are tasked with building ad copy for google search campaign. You have to be able to write copies that actually are smart and provokes user to click on it and make an action. Copy can not be too pushy. It has to follow the tone of content avaibale in ${landingPage}. 
+
 Rules:
  • Create Search campaign ads only.
  • Generate exactly 15 headlines (≤30 chars) and 4 descriptions (≤90 chars). Note: If any of the headlines or descriptions excedes the char limit, they should be discarded and redo.
+ - Char limit rules should be same as Google Ads Rule for Headline and Description
  • Use numeric proof if possible (years, % results, budget).
  • Use varied CTA verbs (≥4 distinct).
  • Headlines and descriptions must sound natural, professional, human.
