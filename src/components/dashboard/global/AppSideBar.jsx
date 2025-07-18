@@ -16,6 +16,7 @@ import {
   WholeWord,
   Binoculars,
   Minus,
+  Beaker,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -68,19 +69,19 @@ const navigation = [
         icon: FolderKanban,
       },
       {
+        title: "Search Campaigns",
+        url: "/dashboard/create/search-ads",
+        icon: Search,
+      },
+      {
         title: "Ad Copy",
         url: "/dashboard/google-tools/ad-copy",
         icon: WholeWord,
       },
       {
-        title: "Keywords Research",
-        url: "/dashboard/google-tools/keywords-research",
+        title: "Keywords",
+        url: "/dashboard/",
         icon: Binoculars,
-      },
-      {
-        title: "Negative Keywords",
-        url: "/dashboard/google-tools/negative-keywords",
-        icon: Minus,
       },
       {
         title: "Budget Funnel",
@@ -90,7 +91,7 @@ const navigation = [
       {
         title: "Problem Solving",
         url: "/dashboard/",
-        icon: Search,
+        icon: Beaker,
       },
       // {
       //   title: "Create",
@@ -191,6 +192,16 @@ export function AppSidebar({ ...props }) {
                           </span>
                         )}
                         {item.title === "Problem Solving" && (
+                          <span className="bg-blue-500 text-[8px] p-[2px] rounded text-white">
+                            Coming Soon
+                          </span>
+                        )}
+                        {item.title === "Negative Keywords" && (
+                          <span className="bg-blue-500 text-[8px] p-[2px] rounded text-white">
+                            Coming Soon
+                          </span>
+                        )}
+                        {item.title === "Keywords" && (
                           <span className="bg-blue-500 text-[8px] p-[2px] rounded text-white">
                             Coming Soon
                           </span>
