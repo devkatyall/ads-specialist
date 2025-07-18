@@ -24,7 +24,7 @@ export async function POST(req) {
 
     // 1. Crawl landing page to get content
     const crawlRes = await fetch(
-      `${process.env.NEXTAUTH_URL}/api/google-tools/crawl`,
+      "/api/google-tools/crawl",
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -36,7 +36,7 @@ export async function POST(req) {
 
     // 2. Keyword research API
     const keywordRes = await fetch(
-      `${process.env.NEXTAUTH_URL}/api/google-tools/keyword-research`,
+      "/api/google-tools/keyword-research",
       {
         method: "POST",
         body: JSON.stringify({
@@ -55,7 +55,7 @@ export async function POST(req) {
 
     // 3. Ad copy generation API
     const adCopyRes = await fetch(
-      `${process.env.NEXTAUTH_URL}/api/google-tools/copy`,
+      "/api/google-tools/copy`,
       {
         method: "POST",
         body: JSON.stringify({
@@ -76,7 +76,7 @@ export async function POST(req) {
 
     // 4. Negative keywords generation API
     const negativeKeywordsRes = await fetch(
-      `${process.env.NEXTAUTH_URL}/api/google-tools/negative-keyword`,
+      "/api/google-tools/negative-keyword",
       {
         method: "POST",
         body: JSON.stringify({
